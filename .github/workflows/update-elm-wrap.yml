@@ -35,10 +35,16 @@ jobs:
           AMD_URL="https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-amd64"
 
           echo "Downloading $ARM_URL"
-          curl -L -o elm-wrap-macos-arm64 "$ARM_URL"
+          if ! curl -L -f -o elm-wrap-macos-arm64 "$ARM_URL"; then
+            echo "ERROR: Failed to download ARM64 binary from $ARM_URL" >&2
+            exit 1
+          fi
 
           echo "Downloading $AMD_URL"
-          curl -L -o elm-wrap-macos-amd64 "$AMD_URL"
+          if ! curl -L -f -o elm-wrap-macos-amd64 "$AMD_URL"; then
+            echo "ERROR: Failed to download AMD64 binary from $AMD_URL" >&2
+            exit 1
+          fi
 
           ARM_SHA=$(shasum -a 256 elm-wrap-macos-arm64 | awk '{print $1}')
           AMD_SHA=$(shasum -a 256 elm-wrap-macos-amd64 | awk '{print $1}')
@@ -55,37 +61,36 @@ jobs:
 
           FORMULA="Formula/elm-wrap.rb"
 
-          cat > "$FORMULA" <<EOF
-class ElmWrap < Formula
-  desc "Elm package management wrapper with custom registry support"
-  homepage "https://github.com/dsimunic/elm-wrap"
-  version "${VERSION}"
-  license "MIT"
-
-  on_macos do
-    if Hardware::CPU.arm?
-      url "https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-arm64"
-      sha256 "${ARM_SHA}"
-    else
-      url "https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-amd64"
-      sha256 "${AMD_SHA}"
-    end
-  end
-
-  def install
-    if OS.mac? && Hardware::CPU.arm?
-      bin.install "elm-wrap-macos-arm64" => "elm-wrap"
-    else
-      bin.install "elm-wrap-macos-amd64" => "elm-wrap"
-    end
-  end
-
-  test do
-    output = shell_output("\#{bin}/elm-wrap --help")
-    assert_match "elm-wrap", output
-  end
-end
-EOF
+          printf '%s\n' \
+            'class ElmWrap < Formula' \
+            '  desc "Elm package management wrapper with custom registry support"' \
+            '  homepage "https://github.com/dsimunic/elm-wrap"' \
+            "  version \"${VERSION}\"" \
+            '  license "MIT"' \
+            '' \
+            '  on_macos do' \
+            '    if Hardware::CPU.arm?' \
+            "      url \"https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-arm64\"" \
+            "      sha256 \"${ARM_SHA}\"" \
+            '    else' \
+            "      url \"https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-amd64\"" \
+            "      sha256 \"${AMD_SHA}\"" \
+            '    end' \
+            '  end' \
+            '' \
+            '  def install' \
+            '    if OS.mac? && Hardware::CPU.arm?' \
+            '      bin.install "elm-wrap-macos-arm64" => "elm-wrap"' \
+            '    else' \
+            '      bin.install "elm-wrap-macos-amd64" => "elm-wrap"' \
+            '    end' \
+            '  end' \
+            '' \
+            '  test do' \
+            '    output = shell_output("#{bin}/elm-wrap --help")' \
+            '    assert_match "elm-wrap", output' \
+            '  end' \
+            'end' > "$FORMULA"
 
       - name: Commit and push changes
         run: |
