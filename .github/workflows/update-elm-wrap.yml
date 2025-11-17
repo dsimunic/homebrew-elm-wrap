@@ -23,8 +23,10 @@ jobs:
             exit 1
           fi
           VERSION="${TAG#v}"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Download release artifacts and compute checksums
         id: sha
@@ -57,9 +59,11 @@ jobs:
           AMD_SHA=$(shasum -a 256 elm-wrap-macos-amd64 | awk '{print $1}')
           SRC_SHA=$(shasum -a 256 source.tar.gz | awk '{print $1}')
 
-          echo "arm_sha=$ARM_SHA" >> "$GITHUB_OUTPUT"
-          echo "amd_sha=$AMD_SHA" >> "$GITHUB_OUTPUT"
-          echo "src_sha=$SRC_SHA" >> "$GITHUB_OUTPUT"
+          {
+            echo "arm_sha=$ARM_SHA"
+            echo "amd_sha=$AMD_SHA"
+            echo "src_sha=$SRC_SHA"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Update elm-wrap formula
         run: |
