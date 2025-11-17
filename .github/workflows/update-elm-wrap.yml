@@ -33,6 +33,7 @@ jobs:
 
           ARM_URL="https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-arm64"
           AMD_URL="https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-amd64"
+          SRC_URL="https://github.com/dsimunic/elm-wrap/archive/refs/tags/${TAG}.tar.gz"
 
           echo "Downloading $ARM_URL"
           if ! curl -L -f -o elm-wrap-macos-arm64 "$ARM_URL"; then
@@ -46,11 +47,19 @@ jobs:
             exit 1
           fi
 
+          echo "Downloading $SRC_URL"
+          if ! curl -L -f -o source.tar.gz "$SRC_URL"; then
+            echo "ERROR: Failed to download source tarball from $SRC_URL" >&2
+            exit 1
+          fi
+
           ARM_SHA=$(shasum -a 256 elm-wrap-macos-arm64 | awk '{print $1}')
           AMD_SHA=$(shasum -a 256 elm-wrap-macos-amd64 | awk '{print $1}')
+          SRC_SHA=$(shasum -a 256 source.tar.gz | awk '{print $1}')
 
           echo "arm_sha=$ARM_SHA" >> "$GITHUB_OUTPUT"
           echo "amd_sha=$AMD_SHA" >> "$GITHUB_OUTPUT"
+          echo "src_sha=$SRC_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Update elm-wrap formula
         run: |
@@ -58,6 +67,7 @@ jobs:
           VERSION="${{ steps.vars.outputs.version }}"
           ARM_SHA="${{ steps.sha.outputs.arm_sha }}"
           AMD_SHA="${{ steps.sha.outputs.amd_sha }}"
+          SRC_SHA="${{ steps.sha.outputs.src_sha }}"
 
           FORMULA="Formula/elm-wrap.rb"
 
@@ -68,7 +78,7 @@ jobs:
             "  version \"${VERSION}\"" \
             '  license "MIT"' \
             '' \
-            '  on_macos do' \
+            '  if OS.mac?' \
             '    if Hardware::CPU.arm?' \
             "      url \"https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-arm64\"" \
             "      sha256 \"${ARM_SHA}\"" \
@@ -76,13 +86,21 @@ jobs:
             "      url \"https://github.com/dsimunic/elm-wrap/releases/download/${TAG}/elm-wrap-macos-amd64\"" \
             "      sha256 \"${AMD_SHA}\"" \
             '    end' \
+            '  else' \
+            "    url \"https://github.com/dsimunic/elm-wrap/archive/refs/tags/${TAG}.tar.gz\"" \
+            "    sha256 \"${SRC_SHA}\"" \
             '  end' \
             '' \
             '  def install' \
-            '    if OS.mac? && Hardware::CPU.arm?' \
-            '      bin.install "elm-wrap-macos-arm64" => "elm-wrap"' \
+            '    if OS.mac?' \
+            '      if Hardware::CPU.arm?' \
+            '        bin.install "elm-wrap-macos-arm64" => "elm-wrap"' \
+            '      else' \
+            '        bin.install "elm-wrap-macos-amd64" => "elm-wrap"' \
+            '      end' \
             '    else' \
-            '      bin.install "elm-wrap-macos-amd64" => "elm-wrap"' \
+            '      system "make"' \
+            '      bin.install "bin/elm-wrap"' \
             '    end' \
             '  end' \
             '' \
