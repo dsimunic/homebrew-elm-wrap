@@ -1,20 +1,20 @@
 class ElmWrap < Formula
   desc "Elm package management wrapper with custom registry support"
   homepage "https://github.com/dsimunic/elm-wrap"
-  version "1.0.1"
+  version "0.5.0-preview.1"
   license "MIT"
 
   if OS.mac?
     if Hardware::CPU.arm?
-      url "https://github.com/dsimunic/elm-wrap/releases/download/v1.0.1/elm-wrap-macos-arm64"
-      sha256 "1c6baee0def03a458458d27eb7fdb2b1265bf252fd820b00e6177f434e935833"
+      url "https://github.com/dsimunic/elm-wrap/releases/download/v0.5.0-preview.1/elm-wrap-macos-arm64"
+      sha256 "a170be9ef871b5f44a691f93ce36e681c1a2bf20b1e9d4622a4c5ab97f5b732e"
     else
-      url "https://github.com/dsimunic/elm-wrap/releases/download/v1.0.1/elm-wrap-macos-amd64"
-      sha256 "661366d09935771af46d4550f0e2d6aa0539f0b0ae9ef2c57fa14cfb34b2ce2b"
+      url "https://github.com/dsimunic/elm-wrap/releases/download/v0.5.0-preview.1/elm-wrap-macos-amd64"
+      sha256 "72c6bb2243071c9e1d162cf00a984cc35804122c00f51779101d211060af2708"
     end
   else
-    url "https://github.com/dsimunic/elm-wrap/archive/refs/tags/v1.0.1.tar.gz"
-    sha256 "385595cfda8d66d17148ceb4f86a1dd4a0582c9d7e9b90e8c33d7a0959c60997"
+    url "https://github.com/dsimunic/elm-wrap/archive/refs/tags/v0.5.0-preview.1.tar.gz"
+    sha256 "0f11b10085704965be75eb7ff19088870f631680c61e09678a9aea6dd7490a68"
   end
 
   def install
