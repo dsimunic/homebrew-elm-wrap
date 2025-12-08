@@ -125,5 +125,7 @@ jobs:
             exit 0
           fi
           git commit -m "elm-wrap ${VERSION}"
-          git push
+          # Ensure we're up to date with remote to avoid push rejections
+          git pull --rebase origin main
+          git push origin main
 
