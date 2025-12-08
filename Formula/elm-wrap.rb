@@ -20,13 +20,13 @@ class ElmWrap < Formula
   def install
     if OS.mac?
       if Hardware::CPU.arm?
-        bin.install "elm-wrap-macos-arm64" => "elm-wrap"
+        bin.install "elm-wrap-macos-arm64" => "wrap"
       else
-        bin.install "elm-wrap-macos-amd64" => "elm-wrap"
+        bin.install "elm-wrap-macos-amd64" => "wrap"
       end
     else
       system "make"
-      bin.install "bin/elm-wrap"
+      bin.install "bin/wrap"
     end
   end
 
